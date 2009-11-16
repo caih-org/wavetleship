@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Module>
+  <ModulePrefs title="Notifiy" height="30">
+    <Require feature="wave" />
+    <Require feature="locked-domain" />
+    <Require feature="dynamic-height"/>
+  </ModulePrefs>
+  <Content type="html">
+    <![CDATA[
+        <style type="text/css">
+            #playground table {
+                border: 2px solid #ccc;
+            }
+        </style>
+
+        <form id="controls" style="display: none">
+            <p>Two participants should join and then you can click on the start button.</p>
+
+            <button type="button" id="join" onclick="join()">Join</button>
+            <button type="button" id="start" onclick="start()">Start</button>
+        </form>
+
+        <div id="playground">
+        </div>
+
+        <script type='text/javascript' src='http://www.google.com/jsapi'></script>
+        <script type='text/javascript'>
+
+            google.load("prototype","1.6.0.3");
+            google.load("scriptaculous", "1.8.2");
+
+            var controls = $('playground');
+            var playground = $('playground');
+            var BOARD_SIZE = 10;
+
+            var getParticipants = function() {
+                return wave.getParticipants().select(function(participant) {
+                    return wave.getState().get(participant) == "true";
+                });
+            }
+
+            var join = function() {
+                state.submitValue(wave.getViewer(), "true");
+            }
+
+            var start = function() {
+                state.submitValue("started", "true");
+            }
+
+            var createField = function(participantId) {
+                var isViewer = wave.getViewer().getId() == participant;
+                var participant = wave.getParticipantById(participantId);
+                var table = new Element("table");
+
+                var caption = new Element("caption");
+                caption.insert(new Element("img", {
+                    src: participant.getThumbnailUrl()
+                }));
+                caption.insert(participant.getDisplayName());
+                table.insert(caption);
+
+                var tbody = new Element("tbody");
+                table.insert("tbody");
+
+                for (var x = 0; x < BOARD_SIZE; x++) {
+                    var tr = new Element("tr");
+                    tbody.insert(td);
+                    for (var y = 0; y < BOARD_SIZE; y++) {
+                        var td = new Element("td").update("&nbsp;");
+                        tr.insert(td);
+                    }
+                }
+
+                return table;
+            }
+
+            var stateUpdated = function() {
+                var participants = getParticipants();
+                var started = wave.getState().get("started");
+
+                if (!started) {
+                    controls.show();
+                    playground.hide();
+                    $("start").disabled = participants.length < 2;
+                    $("join").disabled = wave.getState().get(wave.getViewer() == "true");
+                } else {
+                    controls.hide();
+                    playground.show();
+                    playground.update("");
+                    participants.each(function(participantId) {
+                        playground.insert(createField(participantId));
+                    });
+                }
+
+                gadgets.window.adjustHeight();
+            };
+
+            gadgets.util.registerOnLoadHandler(function() {
+                if (wave && wave.isInWaveContainer()) {
+                    wave.setStateCallback(stateUpdated);
+                }	
+            });
+
+        </script>
+    ]]>
+  </Content>
+</Module>
