@@ -23,13 +23,9 @@
         <div id="playground">
         </div>
 
-        <script type='text/javascript' src='http://www.google.com/jsapi'></script>
-        <script type='text/javascript'>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/prototype/1.6.0.3/prototype.js"></script>
+        <script type="text/javascript">
 
-            google.load("prototype","1.6.0.3");
-            google.load("scriptaculous", "1.8.2");
-
-            var controls, playground;
             var BOARD_SIZE = 10;
 
             var getParticipants = function() {
@@ -75,13 +71,17 @@
 
             var stateUpdated = function() {
                 var participants = getParticipants();
-                var started = wave.getState().get("started");
+                var started = wave.getState().get("started") == "true";
+                var controls = $("controls");
+                var playground = $("playground");
+                var start = $("start");
+                var join = $("join");
 
                 if (!started) {
                     controls.show();
                     playground.hide();
-                    $("start").disabled = participants.length < 2;
-                    $("join").disabled = wave.getState().get(wave.getViewer() == "true");
+                    start.disabled = participants.length < 2;
+                    join.disabled = wave.getState().get(wave.getViewer() == "true");
                 } else {
                     controls.hide();
                     playground.show();
@@ -95,9 +95,6 @@
             };
 
             gadgets.util.registerOnLoadHandler(function() {
-                controls = $("controls");
-                playground = $("playground");
-
                 if (wave && wave.isInWaveContainer()) {
                     wave.setStateCallback(stateUpdated);
                 }	
